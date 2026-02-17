@@ -1,0 +1,32 @@
+body {
+    margin: 0;
+    padding: 20px;
+    background: transparent;
+    font-family: Arial, sans-serif;
+    color: #ffffff;
+}
+
+#container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.event {
+    padding: 10px;
+}
+
+.event.current .title {
+    font-size: 48px;
+    font-weight: bold;
+}
+
+.event.upcoming {
+    font-size: 32px;
+}
+
+#upcoming-events {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}

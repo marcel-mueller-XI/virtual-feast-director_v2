@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "colors": {
+      "type": "object",
+      "properties": {
+        "background": {
+          "type": "string",
+          "default": "#ffffff00",
+          "description": "Background color (transparent by default)"
+        },
+        "text": {
+          "type": "string",
+          "default": "#ffffff",
+          "description": "Text color"
+        }
+      }
+    },
+    "fonts": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "default": "Arial, sans-serif",
+          "description": "Font for current event title"
+        },
+        "upcoming": {
+          "type": "string",
+          "default": "Arial, sans-serif",
+          "description": "Font for upcoming events"
+        }
+      }
+    },
+    "alignment": {
+      "type": "string",
+      "enum": ["left", "right"],
+      "default": "left",
+      "description": "Text alignment"
+    },
+    "countVisibleEvents": {
+      "type": "number",
+      "default": 4,
+      "minimum": 1,
+      "maximum": 10,
+      "description": "Total number of events to display (including current)"
+    }
+  },
+  "additionalProperties": false
+}

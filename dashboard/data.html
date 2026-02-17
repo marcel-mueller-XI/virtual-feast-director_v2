@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 10px;
+        }
+        .controls {
+            margin-bottom: 15px;
+        }
+        button {
+            padding: 8px 16px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .event-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .event-item {
+            padding: 10px;
+            margin-bottom: 5px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .event-item.public {
+            background: #d4edda;
+        }
+        .event-item.visible {
+            border-left: 4px solid #28a745;
+        }
+        label {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button id="toggle-graphics">Show Graphics</button>
+        <button id="refresh-events">Refresh Events</button>
+    </div>
+    
+    <div class="event-list" id="event-list">
+        <p><em>No events loaded. Connect to Ontime first.</em></p>
+    </div>
+    
+    <p><small>TODO: Implement event data management</small></p>
+</body>
+</html>

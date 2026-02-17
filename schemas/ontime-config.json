@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "ip": {
+      "type": "string",
+      "default": "localhost",
+      "description": "Ontime server IP address"
+    },
+    "port": {
+      "type": "number",
+      "default": 4001,
+      "description": "Ontime server port"
+    }
+  },
+  "required": ["ip", "port"],
+  "additionalProperties": false
+}
