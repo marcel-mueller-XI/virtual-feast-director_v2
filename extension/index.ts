@@ -110,13 +110,15 @@ export = (nodecg: any) => {
         return visibility === true;
       }
       
-      // Otherwise, check custom field 'public' (default to true if not set)
-      if (event.custom && typeof event.custom.public === 'boolean') {
-        return event.custom.public === true;
+      // Otherwise, check custom field 'public':
+      // any non-empty string = public, absent/empty = private
+      if (event.custom && 'public' in event.custom) {
+        const val = event.custom.public;
+        return typeof val === 'string' ? val.trim().length > 0 : Boolean(val);
       }
       
-      // Default: show event if no explicit setting
-      return true;
+      // Default: hide event if the custom field is not present at all
+      return false;
     });
   }
 
@@ -157,13 +159,14 @@ export = (nodecg: any) => {
     const events = await fetchRundownData(config.ip, config.port);
     allEvents.value = events;
     
-    // Initialize visibility for new events
+    // Derive visibility from Ontime custom.public field for every event.
+    // This re-syncs on every refresh so stale persisted values cannot linger.
+    // Manual dashboard overrides are intentionally overwritten by a refresh.
     events.forEach((event: any) => {
-      if (event.type === 'event' && eventVisibility.value[event.id] === undefined) {
-        // Check custom field 'public' or default to true
-        const isPublic = event.custom?.public !== false;
-        eventVisibility.value[event.id] = isPublic;
-      }
+      if (event.type !== 'event') return;
+      const pubVal = event.custom?.public;
+      const isPublic = typeof pubVal === 'string' ? pubVal.trim().length > 0 : Boolean(pubVal);
+      eventVisibility.value[event.id] = isPublic;
     });
     
     updateUpcomingEvents();
@@ -249,47 +252,43 @@ export = (nodecg: any) => {
   }
 
   function handleOntimeMessage(message: any) {
-    switch (message.tag || message.type) {
-      case 'ontime':
+    switch (message.tag) {
       case 'poll':
-        // Full state update
-        nodecg.log.debug('Received full state update');
+        // Response to our initial poll request — full RuntimeStore snapshot
+        nodecg.log.debug('Received poll (full state) response');
         if (message.payload) {
           updateFromRuntimeData(message.payload);
         }
         break;
 
-      case 'ontime-eventNow':
-        nodecg.log.debug('Current event updated');
+      case 'runtime-data':
+        // Partial RuntimeStore broadcast on every state change
+        nodecg.log.debug('Received runtime-data update');
         if (message.payload) {
-          currentEvent.value = message.payload;
-          updateUpcomingEvents();
+          updateFromRuntimeData(message.payload);
         }
         break;
 
-      case 'ontime-eventNext':
-        nodecg.log.debug('Next event updated');
-        // Trigger update of upcoming events
-        updateUpcomingEvents();
-        break;
-
-      case 'ontime-rundown':
-        nodecg.log.debug('Rundown updated');
-        // Refresh full event data when rundown changes
-        refreshEventData();
+      case 'refetch':
+        // Ontime signals that persistent data (rundown, custom fields, etc.) has changed
+        nodecg.log.debug(`Received refetch signal for: ${message.payload?.target}`);
+        if (message.payload?.target === 'rundown') {
+          refreshEventData();
+        }
         break;
 
       default:
         // Log unknown message types for debugging
-        nodecg.log.debug(`Unhandled message type: ${message.tag || message.type}`);
+        nodecg.log.debug(`Unhandled message type: ${message.tag}`);
     }
   }
 
   function updateFromRuntimeData(data: any) {
-    if (data.eventNow) {
+    // payload is Partial<RuntimeStore>, so only update fields that are present
+    if ('eventNow' in data) {
       currentEvent.value = data.eventNow;
+      updateUpcomingEvents();
     }
-    updateUpcomingEvents();
   }
 
   // Listen for config changes
@@ -314,11 +313,6 @@ export = (nodecg: any) => {
   });
 
   // Message handlers for dashboard communication
-  nodecg.listenFor('refreshEvents', () => {
-    nodecg.log.info('Manual event refresh requested');
-    refreshEventData();
-  });
-
   nodecg.listenFor('setEventVisibility', (data: { eventId: string; visible: boolean }) => {
     nodecg.log.info(`Setting event ${data.eventId} visibility to ${data.visible}`);
     eventVisibility.value[data.eventId] = data.visible;

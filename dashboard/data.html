@@ -96,6 +96,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            color: #000000;
         }
         .event-meta {
             font-size: 12px;
@@ -160,9 +161,6 @@
         <button id="toggle-graphics" title="Toggle graphics visibility">
             <span id="graphics-status">Show Graphics</span>
         </button>
-        <button id="refresh-events" title="Refresh events from Ontime">
-            🔄 Refresh Events
-        </button>
         <span class="status-badge status-disconnected" id="connection-status">Disconnected</span>
     </div>
 
@@ -202,7 +200,6 @@
         const eventListEl = document.getElementById('event-list');
         const toggleGraphicsBtn = document.getElementById('toggle-graphics');
         const graphicsStatusEl = document.getElementById('graphics-status');
-        const refreshEventsBtn = document.getElementById('refresh-events');
         const connectionStatusEl = document.getElementById('connection-status');
 
         let allEvents = [];
@@ -225,11 +222,6 @@
         // Toggle graphics visibility
         toggleGraphicsBtn.addEventListener('click', () => {
             nodecg.sendMessage('toggleGraphicsVisible');
-        });
-
-        // Refresh events
-        refreshEventsBtn.addEventListener('click', () => {
-            nodecg.sendMessage('refreshEvents');
         });
 
         // Format time from milliseconds
@@ -260,7 +252,7 @@
             const events = allEvents.filter(e => e.type === 'event');
 
             eventListEl.innerHTML = events.map(event => {
-                const isPublic = eventVisibility[event.id] !== false;
+                const isPublic = eventVisibility[event.id] === true;
                 const isCurrent = currentEvent && currentEvent.id === event.id;
                 const isVisible = isEventVisibleInGraphics(event.id);
                 const isSkipped = event.skip === true;
@@ -300,7 +292,7 @@
             document.querySelectorAll('.toggle-button').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const eventId = e.target.dataset.eventId;
-                    const currentVisibility = eventVisibility[eventId] !== false;
+                    const currentVisibility = eventVisibility[eventId] === true;
                     nodecg.sendMessage('setEventVisibility', {
                         eventId: eventId,
                         visible: !currentVisibility

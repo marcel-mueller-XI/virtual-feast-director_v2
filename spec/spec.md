@@ -115,12 +115,10 @@ virtual-feast-director_v2/
 ### 4.2 Data Sources
 
 #### Runtime Data (from Ontime WebSocket)
-Listen for these message types:
-- `ontime-timer`: Timer state, playback status
-- `ontime-rundown`: Rundown information
-- `ontime-eventNow`: Current event data
-- `ontime-eventNext`: Next event data
-- `poll`: Full state snapshot (initial connection)
+Ontime v4 broadcasts two relevant message types:
+- `runtime-data`: Partial `RuntimeStore` object broadcast on every state change (current event, timer, playback). Contains fields such as `eventNow`, `eventNext`, `timer`, etc.
+- `refetch`: Signals that persistent REST data has changed and should be re-fetched. Payload is `{ target: string, revision: number }`. Relevant target keys: `rundown` (event list changed), `custom-fields`, etc.
+- `poll`: Response to an explicit `{tag:"poll"}` request — contains the full `RuntimeStore` snapshot.
 
 #### Event Data Structure
 Events contain:
@@ -138,7 +136,7 @@ Events contain:
 ### 4.3 Event Filtering Logic
 The extension should filter events based on:
 1. **Skip status**: Exclude events with `skip: true`
-2. **Custom field filtering**: Configurable custom field (e.g., `custom.public === true`)
+2. **Custom field filtering**: Check the `custom.public` field — if the field contains **any non-empty text** the event is considered public; if the field is absent, `null`, or an empty string the event is considered private. (Ontime stores custom field values as text, so users simply type any value such as `"true"` or `"yes"` to mark an event public and leave it blank to make it private.)
 3. **Event type**: Only include type "event" (exclude blocks, delays, etc.)
 
 ### 4.4 Polling & Updates
@@ -239,6 +237,7 @@ Third Event Title
 - Toggle public/private of events
 - Visual indication which events are shown
 - Toggle for hide/show graphics (controls visibility of the entire graphics output)
+- Event list updates automatically whenever Ontime signals a rundown change via WebSocket (no manual refresh button)
 
 ## 7. Data Flow
 
@@ -284,7 +283,7 @@ Third Event Title
   },
   "filtering": {
     "customField": "public",
-    "customFieldValue": true
+    "customFieldValue": "<any non-empty text>"
   }
 }
 ```
