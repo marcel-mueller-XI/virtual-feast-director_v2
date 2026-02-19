@@ -312,11 +312,37 @@ export = (nodecg: any) => {
     updateUpcomingEvents();
   });
 
+  // Write event public/private state back to Ontime via HTTP change API
+  async function writeEventVisibilityToOntime(eventId: string, visible: boolean): Promise<void> {
+    const config = ontimeConfig.value;
+    if (!config || !config.ip || !config.port) {
+      nodecg.log.warn('Cannot write event visibility: Ontime config not set');
+      return;
+    }
+
+    // Any non-empty string = public, empty string = private
+    const publicValue = visible ? 'true' : '';
+    const url = `http://${config.ip}:${config.port}/api/change/${eventId}?custom:public=${encodeURIComponent(publicValue)}`;
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      nodecg.log.info(`✓ Set event ${eventId} custom:public=${publicValue || '(empty)'} in Ontime`);
+    } catch (err: any) {
+      nodecg.log.error(`Failed to write event visibility to Ontime: ${err.message}`);
+    }
+  }
+
   // Message handlers for dashboard communication
   nodecg.listenFor('setEventVisibility', (data: { eventId: string; visible: boolean }) => {
     nodecg.log.info(`Setting event ${data.eventId} visibility to ${data.visible}`);
+    // Update local replicant immediately for instant UI feedback
     eventVisibility.value[data.eventId] = data.visible;
     updateUpcomingEvents();
+    // Persist the change to Ontime (the refetch WS signal will re-sync allEvents)
+    writeEventVisibilityToOntime(data.eventId, data.visible);
   });
 
   nodecg.listenFor('toggleGraphicsVisible', () => {

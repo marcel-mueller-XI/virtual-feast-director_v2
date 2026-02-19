@@ -234,7 +234,7 @@ Third Event Title
 
 #### Data Panel
 - Show all events, not only those to be shown
-- Toggle public/private of events
+- Toggle public/private of events — writes the change back to Ontime via `GET /api/change/<eventId>?custom:public=<value>` (non-empty string for public, empty string for private)
 - Visual indication which events are shown
 - Toggle for hide/show graphics (controls visibility of the entire graphics output)
 - Event list updates automatically whenever Ontime signals a rundown change via WebSocket (no manual refresh button)
