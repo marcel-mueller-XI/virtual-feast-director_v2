@@ -60,6 +60,11 @@ export = (nodecg: any) => {
   let reconnectAttempts = 0;
   const MAX_RECONNECT_ATTEMPTS = 10;
 
+  // Raw current event ID from Ontime (regardless of public/private status).
+  // Used to correctly calculate which events are "upcoming" even when the
+  // current event itself is private and therefore not exposed to graphics.
+  let liveCurrentEventId: string | null = null;
+
   // Fetch rundown data from Ontime HTTP API
   async function fetchRundownData(ip: string, port: number): Promise<any[]> {
     const url = `http://${ip}:${port}/data/rundowns/current`;
@@ -124,28 +129,29 @@ export = (nodecg: any) => {
 
   // Update filtered upcoming events
   function updateUpcomingEvents() {
-    const filtered = filterEvents(allEvents.value);
-    
-    // Find current event index
-    const currentEventId = currentEvent.value?.id;
-    let startIndex = 0;
-    
-    if (currentEventId) {
-      const currentIndex = filtered.findIndex((e: any) => e.id === currentEventId);
-      if (currentIndex !== -1) {
-        // Start from next event after current
-        startIndex = currentIndex + 1;
+    const allEventsRaw: any[] = allEvents.value as any[];
+    const count = (displaySettings.value.countVisibleEvents || 4) - 1;
+
+    // Find the raw position of the current event (which may be private)
+    // so upcoming events are always those that come *after* the current
+    // event in rundown order, regardless of its visibility.
+    if (liveCurrentEventId) {
+      const rawIndex = allEventsRaw.findIndex((e: any) => e.id === liveCurrentEventId);
+      if (rawIndex !== -1) {
+        const eventsAfter = allEventsRaw.slice(rawIndex + 1);
+        const filtered = filterEvents(eventsAfter);
+        const upcoming = JSON.parse(JSON.stringify(filtered.slice(0, count)));
+        upcomingEvents.value = upcoming;
+        nodecg.log.debug(`Updated upcoming events: ${upcoming.length} events (after raw index ${rawIndex})`);
+        return;
       }
     }
-    
-    // Get the number of upcoming events to show (total - 1 for current event)
-    const count = (displaySettings.value.countVisibleEvents || 4) - 1;
-    
-    // Get upcoming events - deep clone to avoid NodeCG "single owner" proxy error
-    const upcoming = JSON.parse(JSON.stringify(filtered.slice(startIndex, startIndex + count)));
-    
+
+    // No current event known — show first N public events
+    const filtered = filterEvents(allEventsRaw);
+    const upcoming = JSON.parse(JSON.stringify(filtered.slice(0, count)));
     upcomingEvents.value = upcoming;
-    nodecg.log.debug(`Updated upcoming events: ${upcoming.length} events`);
+    nodecg.log.debug(`Updated upcoming events: ${upcoming.length} events (no current event)`);
   }
 
   // Refresh all event data from Ontime
@@ -286,7 +292,18 @@ export = (nodecg: any) => {
   function updateFromRuntimeData(data: any) {
     // payload is Partial<RuntimeStore>, so only update fields that are present
     if ('eventNow' in data) {
-      currentEvent.value = data.eventNow;
+      const event = data.eventNow;
+      liveCurrentEventId = event?.id ?? null;
+
+      // Only expose the current event to graphics if it passes the public filter.
+      // Private events must not appear on screen.
+      if (!event) {
+        currentEvent.value = null;
+      } else {
+        const filtered = filterEvents([event]);
+        currentEvent.value = filtered.length > 0 ? event : null;
+      }
+
       updateUpcomingEvents();
     }
   }
