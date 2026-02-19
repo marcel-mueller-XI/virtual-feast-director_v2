@@ -22,7 +22,7 @@ Unlike the original Virtual Feast Director, version 2 is:
 ## 2. Core Functionality
 
 ### 2.1 Display Features
-The graphics should display only text with transparent background:
+The graphics always render with a transparent background (hardcoded) and display only text:
 
 #### Current Event
 - Event title (big)
@@ -38,7 +38,8 @@ The graphics should display only text with transparent background:
 - Skip events marked as "skip" in Ontime
 
 ### 2.3 Styling & Customization
-- Customizable colors via NodeCG dashboard
+- Always transparent background (hardcoded, not user-configurable)
+- Customizable text color via NodeCG dashboard
 - Option for left or right alignment
 - Configurable fonts
 - Responsive layout

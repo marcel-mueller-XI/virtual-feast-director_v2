@@ -15,7 +15,7 @@ export = (nodecg: any) => {
 
   const displaySettings = nodecg.Replicant('displaySettings', {
     defaultValue: {
-      colors: { background: '#ffffff00', text: '#ffffff' },
+      colors: { text: '#000000' },
       fonts: { title: 'Arial, sans-serif', upcoming: 'Arial, sans-serif' },
       alignment: 'left',
       countVisibleEvents: 4

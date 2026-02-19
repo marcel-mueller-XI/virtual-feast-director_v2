@@ -5,14 +5,9 @@
     "colors": {
       "type": "object",
       "properties": {
-        "background": {
-          "type": "string",
-          "default": "#ffffff00",
-          "description": "Background color (transparent by default)"
-        },
         "text": {
           "type": "string",
-          "default": "#ffffff",
+          "default": "#000000",
           "description": "Text color"
         }
       }

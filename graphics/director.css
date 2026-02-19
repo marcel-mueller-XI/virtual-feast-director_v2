@@ -3,12 +3,13 @@ body {
     padding: 20px;
     background: transparent;
     font-family: Arial, sans-serif;
-    color: #ffffff;
+    color: #000000;
 }
 
 #container {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: 20px;
 }
 
