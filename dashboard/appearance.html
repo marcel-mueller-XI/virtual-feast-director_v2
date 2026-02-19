@@ -91,13 +91,36 @@
     <div class="section-title">Fonts</div>
 
     <div class="form-group">
-        <label for="title-font">Current Event Font:</label>
-        <input type="text" id="title-font" placeholder="e.g. Arial, sans-serif">
-    </div>
-
-    <div class="form-group">
-        <label for="upcoming-font">Upcoming Events Font:</label>
-        <input type="text" id="upcoming-font" placeholder="e.g. Arial, sans-serif">
+        <label for="font">Font:</label>
+        <select id="font">
+            <optgroup label="Sans-serif">
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="Arial Black, sans-serif">Arial Black</option>
+                <option value="Calibri, sans-serif">Calibri</option>
+                <option value="Franklin Gothic Medium, sans-serif">Franklin Gothic Medium</option>
+                <option value="Futura, Century Gothic, sans-serif">Futura / Century Gothic</option>
+                <option value="Gill Sans, sans-serif">Gill Sans</option>
+                <option value="Helvetica Neue, Helvetica, Arial, sans-serif">Helvetica Neue</option>
+                <option value="Impact, sans-serif">Impact</option>
+                <option value="Lucida Sans Unicode, sans-serif">Lucida Sans</option>
+                <option value="Segoe UI, sans-serif">Segoe UI</option>
+                <option value="Tahoma, sans-serif">Tahoma</option>
+                <option value="Trebuchet MS, sans-serif">Trebuchet MS</option>
+                <option value="Verdana, sans-serif">Verdana</option>
+            </optgroup>
+            <optgroup label="Serif">
+                <option value="Book Antiqua, Palatino, serif">Book Antiqua</option>
+                <option value="Garamond, serif">Garamond</option>
+                <option value="Georgia, serif">Georgia</option>
+                <option value="Palatino Linotype, Palatino, serif">Palatino Linotype</option>
+                <option value="Times New Roman, serif">Times New Roman</option>
+            </optgroup>
+            <optgroup label="Monospace">
+                <option value="Consolas, monospace">Consolas</option>
+                <option value="Courier New, monospace">Courier New</option>
+                <option value="Lucida Console, monospace">Lucida Console</option>
+            </optgroup>
+        </select>
     </div>
 
     <script>
@@ -106,8 +129,7 @@
         const textColorInput = document.getElementById('text-color');
         const alignmentSelect = document.getElementById('alignment');
         const countVisibleInput = document.getElementById('count-visible');
-        const titleFontInput = document.getElementById('title-font');
-        const upcomingFontInput = document.getElementById('upcoming-font');
+        const fontSelect = document.getElementById('font');
 
         function applySettingsToUI(settings) {
             if (!settings) return;
@@ -119,8 +141,7 @@
 
             alignmentSelect.value = settings.alignment ?? 'left';
             countVisibleInput.value = settings.countVisibleEvents ?? 4;
-            titleFontInput.value = settings.fonts?.title ?? 'Arial, sans-serif';
-            upcomingFontInput.value = settings.fonts?.upcoming ?? 'Arial, sans-serif';
+            fontSelect.value = settings.font ?? 'Arial, sans-serif';
         }
 
         function saveSettings() {
@@ -128,10 +149,7 @@
                 colors: {
                     text: textColorInput.value
                 },
-                fonts: {
-                    title: titleFontInput.value || 'Arial, sans-serif',
-                    upcoming: upcomingFontInput.value || 'Arial, sans-serif'
-                },
+                font: fontSelect.value || 'Arial, sans-serif',
                 alignment: alignmentSelect.value,
                 countVisibleEvents: parseInt(countVisibleInput.value, 10) || 4
             };
@@ -146,8 +164,7 @@
         textColorInput.addEventListener('input', saveSettings);
         alignmentSelect.addEventListener('change', saveSettings);
         countVisibleInput.addEventListener('change', saveSettings);
-        titleFontInput.addEventListener('change', saveSettings);
-        upcomingFontInput.addEventListener('change', saveSettings);
+        fontSelect.addEventListener('change', saveSettings);
     </script>
 </body>
 </html>

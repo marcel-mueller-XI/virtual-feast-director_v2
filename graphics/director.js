@@ -21,14 +21,10 @@ function applyAppearance(settings) {
     document.getElementById('container').style.alignItems =
         alignment === 'right' ? 'flex-end' : 'flex-start';
 
-    // Fonts
-    const titleFont    = settings.fonts?.title    ?? 'Arial, sans-serif';
-    const upcomingFont = settings.fonts?.upcoming ?? 'Arial, sans-serif';
-    document.querySelectorAll('.event.current .title').forEach(el => {
-        el.style.fontFamily = titleFont;
-    });
-    document.querySelectorAll('.event.upcoming').forEach(el => {
-        el.style.fontFamily = upcomingFont;
+    // Font (shared for all event text)
+    const font = settings.font ?? 'Arial, sans-serif';
+    document.querySelectorAll('.event.current .title, .event.upcoming').forEach(el => {
+        el.style.fontFamily = font;
     });
 }
 
@@ -52,9 +48,8 @@ function renderUpcomingEvents(events) {
         const div = document.createElement('div');
         div.className = 'event upcoming';
         div.textContent = event.title ?? '';
-        // Apply upcoming font immediately from current settings
-        const font = displaySettings.value?.fonts?.upcoming ?? 'Arial, sans-serif';
-        div.style.fontFamily = font;
+        // Apply font immediately from current settings
+        div.style.fontFamily = displaySettings.value?.font ?? 'Arial, sans-serif';
         container.appendChild(div);
     });
 }

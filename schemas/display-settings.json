@@ -12,20 +12,10 @@
         }
       }
     },
-    "fonts": {
-      "type": "object",
-      "properties": {
-        "title": {
-          "type": "string",
-          "default": "Arial, sans-serif",
-          "description": "Font for current event title"
-        },
-        "upcoming": {
-          "type": "string",
-          "default": "Arial, sans-serif",
-          "description": "Font for upcoming events"
-        }
-      }
+    "font": {
+      "type": "string",
+      "default": "Arial, sans-serif",
+      "description": "Font family for all event text"
     },
     "alignment": {
       "type": "string",
