@@ -26,6 +26,31 @@ function applyAppearance(settings) {
     document.querySelectorAll('.event.current .title, .event.upcoming').forEach(el => {
         el.style.fontFamily = font;
     });
+
+    // Text sizes
+    const currentSize  = (settings.textSize?.current  ?? 48) + 'px';
+    const upcomingSize = (settings.textSize?.upcoming ?? 32) + 'px';
+    document.querySelectorAll('.event.current .title').forEach(el => {
+        el.style.fontSize = currentSize;
+    });
+    document.querySelectorAll('.event.upcoming').forEach(el => {
+        el.style.fontSize = upcomingSize;
+    });
+
+    // Position — anchor edge depends on alignment:
+    // left-aligned:  X% from the left  (left edge of text is fixed)
+    // right-aligned: X% from the right (right edge of text is fixed)
+    const container = document.getElementById('container');
+    const x = (settings.position?.x ?? 0) + '%';
+    const y = (settings.position?.y ?? 0) + '%';
+    if (alignment === 'right') {
+        container.style.left  = 'auto';
+        container.style.right = x;
+    } else {
+        container.style.right = 'auto';
+        container.style.left  = x;
+    }
+    container.style.top = y;
 }
 
 displaySettings.on('change', applyAppearance);
@@ -48,8 +73,9 @@ function renderUpcomingEvents(events) {
         const div = document.createElement('div');
         div.className = 'event upcoming';
         div.textContent = event.title ?? '';
-        // Apply font immediately from current settings
+        // Apply font and size immediately from current settings
         div.style.fontFamily = displaySettings.value?.font ?? 'Arial, sans-serif';
+        div.style.fontSize   = (displaySettings.value?.textSize?.upcoming ?? 32) + 'px';
         container.appendChild(div);
     });
 }

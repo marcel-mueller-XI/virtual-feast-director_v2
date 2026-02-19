@@ -17,6 +17,44 @@
       "default": "Arial, sans-serif",
       "description": "Font family for all event text"
     },
+    "textSize": {
+      "type": "object",
+      "properties": {
+        "current": {
+          "type": "number",
+          "default": 48,
+          "minimum": 8,
+          "maximum": 300,
+          "description": "Font size (px) for the current event title"
+        },
+        "upcoming": {
+          "type": "number",
+          "default": 32,
+          "minimum": 8,
+          "maximum": 300,
+          "description": "Font size (px) for upcoming event titles"
+        }
+      }
+    },
+    "position": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Horizontal position of the container (% from left)"
+        },
+        "y": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Vertical position of the container (% from top)"
+        }
+      }
+    },
     "alignment": {
       "type": "string",
       "enum": ["left", "right"],

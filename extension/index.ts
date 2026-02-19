@@ -17,6 +17,8 @@ export = (nodecg: any) => {
     defaultValue: {
       colors: { text: '#000000' },
       font: 'Arial, sans-serif',
+      textSize: { current: 48, upcoming: 32 },
+      position: { x: 0, y: 0 },
       alignment: 'left',
       countVisibleEvents: 4
     },

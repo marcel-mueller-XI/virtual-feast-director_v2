@@ -35,6 +35,21 @@
         input[type="number"] {
             width: 100%;
         }
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .slider-row input[type="range"] {
+            flex: 1;
+            padding: 0;
+        }
+        .slider-value {
+            min-width: 36px;
+            text-align: right;
+            font-size: 13px;
+            color: #555;
+        }
         .color-row {
             display: flex;
             align-items: center;
@@ -91,7 +106,7 @@
     <div class="section-title">Fonts</div>
 
     <div class="form-group">
-        <label for="font">Font:</label>
+        <label for="font">Font Family:</label>
         <select id="font">
             <optgroup label="Sans-serif">
                 <option value="Arial, sans-serif">Arial</option>
@@ -123,48 +138,96 @@
         </select>
     </div>
 
+    <div class="section-title">Text Sizes</div>
+
+    <div class="form-group">
+        <label for="size-current">Current Event (px):</label>
+        <input type="number" id="size-current" min="8" max="300" value="48">
+    </div>
+
+    <div class="form-group">
+        <label for="size-upcoming">Upcoming Events (px):</label>
+        <input type="number" id="size-upcoming" min="8" max="300" value="32">
+    </div>
+
+    <div class="section-title">Position</div>
+
+    <div class="form-group">
+        <label>Horizontal (X):</label>
+        <div class="slider-row">
+            <input type="range" id="position-x" min="0" max="100" value="0">
+            <span class="slider-value" id="position-x-val">0%</span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Vertical (Y):</label>
+        <div class="slider-row">
+            <input type="range" id="position-y" min="0" max="100" value="0">
+            <span class="slider-value" id="position-y-val">0%</span>
+        </div>
+    </div>
+
     <script>
         const displaySettings = nodecg.Replicant('displaySettings');
 
-        const textColorInput = document.getElementById('text-color');
+        const textColorInput  = document.getElementById('text-color');
         const alignmentSelect = document.getElementById('alignment');
         const countVisibleInput = document.getElementById('count-visible');
-        const fontSelect = document.getElementById('font');
+        const fontSelect      = document.getElementById('font');
+        const sizeCurrentInput  = document.getElementById('size-current');
+        const sizeUpcomingInput = document.getElementById('size-upcoming');
+        const posXInput = document.getElementById('position-x');
+        const posYInput = document.getElementById('position-y');
+        const posXVal   = document.getElementById('position-x-val');
+        const posYVal   = document.getElementById('position-y-val');
 
         function applySettingsToUI(settings) {
             if (!settings) return;
 
             const text = settings.colors?.text ?? '#000000';
-            if (/^#[0-9a-fA-F]{6}$/.test(text)) {
-                textColorInput.value = text;
-            }
+            if (/^#[0-9a-fA-F]{6}$/.test(text)) textColorInput.value = text;
 
-            alignmentSelect.value = settings.alignment ?? 'left';
+            alignmentSelect.value   = settings.alignment ?? 'left';
             countVisibleInput.value = settings.countVisibleEvents ?? 4;
-            fontSelect.value = settings.font ?? 'Arial, sans-serif';
+            fontSelect.value        = settings.font ?? 'Arial, sans-serif';
+            sizeCurrentInput.value  = settings.textSize?.current  ?? 48;
+            sizeUpcomingInput.value = settings.textSize?.upcoming ?? 32;
+
+            const x = settings.position?.x ?? 0;
+            const y = settings.position?.y ?? 0;
+            posXInput.value = x; posXVal.textContent = x + '%';
+            posYInput.value = y; posYVal.textContent = y + '%';
         }
 
         function saveSettings() {
             displaySettings.value = {
-                colors: {
-                    text: textColorInput.value
+                colors:    { text: textColorInput.value },
+                font:      fontSelect.value || 'Arial, sans-serif',
+                textSize:  {
+                    current:  parseInt(sizeCurrentInput.value,  10) || 48,
+                    upcoming: parseInt(sizeUpcomingInput.value, 10) || 32
                 },
-                font: fontSelect.value || 'Arial, sans-serif',
+                position:  { x: parseInt(posXInput.value, 10), y: parseInt(posYInput.value, 10) },
                 alignment: alignmentSelect.value,
                 countVisibleEvents: parseInt(countVisibleInput.value, 10) || 4
             };
         }
 
-        // Sync UI when replicant changes (e.g. on load or from another panel)
-        displaySettings.on('change', (newVal) => {
-            if (newVal) applySettingsToUI(newVal);
-        });
+        // Sync UI when replicant changes
+        displaySettings.on('change', (newVal) => { if (newVal) applySettingsToUI(newVal); });
+
+        // Live slider labels
+        posXInput.addEventListener('input', () => { posXVal.textContent = posXInput.value + '%'; saveSettings(); });
+        posYInput.addEventListener('input', () => { posYVal.textContent = posYInput.value + '%'; saveSettings(); });
 
         // Save on any field change
         textColorInput.addEventListener('input', saveSettings);
         alignmentSelect.addEventListener('change', saveSettings);
         countVisibleInput.addEventListener('change', saveSettings);
         fontSelect.addEventListener('change', saveSettings);
+        sizeCurrentInput.addEventListener('change', saveSettings);
+        sizeUpcomingInput.addEventListener('change', saveSettings);
     </script>
 </body>
 </html>

@@ -219,12 +219,10 @@ Third Event Title
 #### Appearance Panel
 - Color pickers (background, text, accents)
 - Font selection dropdowns
-- Text size sliders
+- Text size option (separate for current and upcomming events)
 - Text position sliders
-- Custom field toggles
 - left/right alignment
 - choose how many events will be shown `count_visible_events`, including the current event
-- Live preview
 
 #### Data Panel
 - Show all events, not only those to be shown
@@ -232,6 +230,7 @@ Third Event Title
 - Visual indication which events are shown
 - Toggle for hide/show graphics (controls visibility of the entire graphics output)
 - Event list updates automatically whenever Ontime signals a rundown change via WebSocket (no manual refresh button)
+- Live preview
 
 ## 7. Data Flow
 
