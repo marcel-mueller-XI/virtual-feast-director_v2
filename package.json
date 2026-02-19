@@ -34,13 +34,6 @@
         "headerColor": "#27ae60"
       },
       {
-        "name": "status",
-        "title": "Status",
-        "width": 2,
-        "file": "status.html",
-        "headerColor": "#3498db"
-      },
-      {
         "name": "data",
         "title": "Data",
         "width": 3,

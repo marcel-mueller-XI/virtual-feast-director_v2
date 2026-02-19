@@ -88,7 +88,6 @@ virtual-feast-director_v2/
 #### Dashboard Panels
 - **Connection Panel**: Configure Ontime server connection
 - **Appearance Panel**: Customize appearance, define how many events are shown `count_visible_events`
-- **Status Panel**: Connection status, current event info
 - **Data Panel**: List of all events (not only public events), option to set events public/private, hide/show grafic, 
 
 #### Graphics
@@ -226,12 +225,6 @@ Third Event Title
 - choose how many events will be shown `count_visible_events`, including the current event
 - Live preview
 
-#### Status Panel
-- Current connection status
-- Current event title
-- Upcoming events list
-- Last update timestamp
-
 #### Data Panel
 - Show all events, not only those to be shown
 - Toggle public/private of events — writes the change back to Ontime via `GET /api/change/<eventId>?custom:public=<value>` (non-empty string for public, empty string for private)
@@ -350,7 +343,6 @@ Third Event Title
 ### Phase 4: Dashboard Controls
 - [ ] Connection configuration panel
 - [ ] Display settings panel
-- [ ] Status monitoring panel
 - [ ] Live preview functionality
 
 ### Phase 5: Customization
