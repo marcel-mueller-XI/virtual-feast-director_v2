@@ -8,49 +8,342 @@
         body {
             font-family: Arial, sans-serif;
             padding: 10px;
+            margin: 0;
         }
         .controls {
             margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
         }
         button {
             padding: 8px 16px;
-            margin-right: 10px;
             cursor: pointer;
+            border: 1px solid #ccc;
+            background: white;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #e9ecef;
+        }
+        button.active {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-disconnected {
+            background: #f8d7da;
+            color: #721c24;
         }
         .event-list {
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
         }
         .event-item {
-            padding: 10px;
-            margin-bottom: 5px;
-            background: #f5f5f5;
-            border-radius: 4px;
+            padding: 12px;
+            margin: 0;
+            border-bottom: 1px solid #dee2e6;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: background 0.2s;
+        }
+        .event-item:last-child {
+            border-bottom: none;
+        }
+        .event-item:hover {
+            background: #f8f9fa;
+        }
+        .event-item.private {
+            background: #f8f9fa;
+            opacity: 0.7;
         }
         .event-item.public {
             background: #d4edda;
         }
-        .event-item.visible {
-            border-left: 4px solid #28a745;
+        .event-item.current {
+            border-left: 4px solid #007bff;
+            background: #cfe2ff;
         }
-        label {
+        .event-item.visible-in-graphics {
+            border-right: 4px solid #28a745;
+        }
+        .event-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .event-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .event-meta {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .event-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .toggle-button {
+            padding: 4px 12px;
+            font-size: 12px;
+            border-radius: 12px;
             cursor: pointer;
+            border: 1px solid #ccc;
+            background: white;
+            transition: all 0.2s;
+        }
+        .toggle-button.public {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        .toggle-button:hover {
+            transform: scale(1.05);
+        }
+        .empty-state {
+            padding: 40px;
+            text-align: center;
+            color: #6c757d;
+        }
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            font-size: 12px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .legend-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+        }
+        .legend-current {
+            border-left: 4px solid #007bff;
+            width: 12px;
+        }
+        .legend-visible {
+            border-right: 4px solid #28a745;
+            width: 12px;
         }
     </style>
 </head>
 <body>
     <div class="controls">
-        <button id="toggle-graphics">Show Graphics</button>
-        <button id="refresh-events">Refresh Events</button>
+        <button id="toggle-graphics" title="Toggle graphics visibility">
+            <span id="graphics-status">Show Graphics</span>
+        </button>
+        <button id="refresh-events" title="Refresh events from Ontime">
+            🔄 Refresh Events
+        </button>
+        <span class="status-badge status-disconnected" id="connection-status">Disconnected</span>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-box legend-current"></div>
+            <span>Current Event</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-box legend-visible"></div>
+            <span>Visible in Graphics</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-box" style="background: #d4edda;"></div>
+            <span>Public</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-box" style="background: #f8f9fa;"></div>
+            <span>Private</span>
+        </div>
     </div>
     
     <div class="event-list" id="event-list">
-        <p><em>No events loaded. Connect to Ontime first.</em></p>
+        <div class="empty-state">
+            <p><em>No events loaded. Connect to Ontime first.</em></p>
+        </div>
     </div>
-    
-    <p><small>TODO: Implement event data management</small></p>
+
+    <script>
+        const allEventsRep = nodecg.Replicant('allEvents');
+        const currentEventRep = nodecg.Replicant('currentEvent');
+        const upcomingEventsRep = nodecg.Replicant('upcomingEvents');
+        const eventVisibilityRep = nodecg.Replicant('eventVisibility');
+        const graphicsVisibleRep = nodecg.Replicant('graphicsVisible');
+        const ontimeConnectedRep = nodecg.Replicant('ontimeConnected');
+
+        const eventListEl = document.getElementById('event-list');
+        const toggleGraphicsBtn = document.getElementById('toggle-graphics');
+        const graphicsStatusEl = document.getElementById('graphics-status');
+        const refreshEventsBtn = document.getElementById('refresh-events');
+        const connectionStatusEl = document.getElementById('connection-status');
+
+        let allEvents = [];
+        let currentEvent = null;
+        let upcomingEvents = [];
+        let eventVisibility = {};
+        let graphicsVisible = true;
+
+        // Update graphics toggle button
+        function updateGraphicsButton() {
+            if (graphicsVisible) {
+                toggleGraphicsBtn.classList.add('active');
+                graphicsStatusEl.textContent = '👁️ Graphics Visible';
+            } else {
+                toggleGraphicsBtn.classList.remove('active');
+                graphicsStatusEl.textContent = '🚫 Graphics Hidden';
+            }
+        }
+
+        // Toggle graphics visibility
+        toggleGraphicsBtn.addEventListener('click', () => {
+            nodecg.sendMessage('toggleGraphicsVisible');
+        });
+
+        // Refresh events
+        refreshEventsBtn.addEventListener('click', () => {
+            nodecg.sendMessage('refreshEvents');
+        });
+
+        // Format time from milliseconds
+        function formatTime(ms) {
+            if (!ms && ms !== 0) return '';
+            const hours = Math.floor(ms / 3600000);
+            const minutes = Math.floor((ms % 3600000) / 60000);
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        }
+
+        // Check if event is visible in graphics
+        function isEventVisibleInGraphics(eventId) {
+            // Current event or in upcoming events
+            if (currentEvent && currentEvent.id === eventId) {
+                return true;
+            }
+            return upcomingEvents.some(e => e.id === eventId);
+        }
+
+        // Render event list
+        function renderEventList() {
+            if (!allEvents || allEvents.length === 0) {
+                eventListEl.innerHTML = '<div class="empty-state"><p><em>No events loaded. Connect to Ontime first.</em></p></div>';
+                return;
+            }
+
+            // Filter only events (not blocks, delays, etc.)
+            const events = allEvents.filter(e => e.type === 'event');
+
+            eventListEl.innerHTML = events.map(event => {
+                const isPublic = eventVisibility[event.id] !== false;
+                const isCurrent = currentEvent && currentEvent.id === event.id;
+                const isVisible = isEventVisibleInGraphics(event.id);
+                const isSkipped = event.skip === true;
+
+                let classes = ['event-item'];
+                if (isPublic) classes.push('public');
+                else classes.push('private');
+                if (isCurrent) classes.push('current');
+                if (isVisible) classes.push('visible-in-graphics');
+
+                const startTime = formatTime(event.timeStart);
+                const endTime = formatTime(event.timeEnd);
+
+                return `
+                    <div class="${classes.join(' ')}" data-event-id="${event.id}">
+                        <div class="event-info">
+                            <div class="event-title">${event.title || 'Untitled Event'}</div>
+                            <div class="event-meta">
+                                ${event.cue ? `Cue: ${event.cue} | ` : ''}
+                                ${startTime ? `${startTime} - ${endTime}` : ''}
+                                ${isSkipped ? ' | ⏭️ SKIPPED' : ''}
+                                ${isCurrent ? ' | 🔴 CURRENT' : ''}
+                            </div>
+                        </div>
+                        <div class="event-actions">
+                            <button class="toggle-button ${isPublic ? 'public' : ''}" 
+                                    data-event-id="${event.id}"
+                                    title="Toggle public/private">
+                                ${isPublic ? '👁️ Public' : '🚫 Private'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add event listeners to toggle buttons
+            document.querySelectorAll('.toggle-button').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const eventId = e.target.dataset.eventId;
+                    const currentVisibility = eventVisibility[eventId] !== false;
+                    nodecg.sendMessage('setEventVisibility', {
+                        eventId: eventId,
+                        visible: !currentVisibility
+                    });
+                });
+            });
+        }
+
+        // Listen for replicant changes
+        allEventsRep.on('change', (newValue) => {
+            allEvents = newValue || [];
+            renderEventList();
+        });
+
+        currentEventRep.on('change', (newValue) => {
+            currentEvent = newValue;
+            renderEventList();
+        });
+
+        upcomingEventsRep.on('change', (newValue) => {
+            upcomingEvents = newValue || [];
+            renderEventList();
+        });
+
+        eventVisibilityRep.on('change', (newValue) => {
+            eventVisibility = newValue || {};
+            renderEventList();
+        });
+
+        graphicsVisibleRep.on('change', (newValue) => {
+            graphicsVisible = newValue !== false;
+            updateGraphicsButton();
+        });
+
+        ontimeConnectedRep.on('change', (newValue) => {
+            if (newValue) {
+                connectionStatusEl.textContent = 'Connected';
+                connectionStatusEl.className = 'status-badge status-connected';
+            } else {
+                connectionStatusEl.textContent = 'Disconnected';
+                connectionStatusEl.className = 'status-badge status-disconnected';
+            }
+        });
+    </script>
 </body>
 </html>

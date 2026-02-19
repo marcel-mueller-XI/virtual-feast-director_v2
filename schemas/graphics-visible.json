@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "boolean",
+  "description": "Controls visibility of the entire graphics output",
+  "default": true
+}

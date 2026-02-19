@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "array",
+  "description": "Complete list of all events from Ontime rundown",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "Unique event identifier"
+      },
+      "title": {
+        "type": "string",
+        "description": "Event title"
+      },
+      "cue": {
+        "type": "string",
+        "description": "Event cue identifier"
+      },
+      "timeStart": {
+        "type": "number",
+        "description": "Scheduled start time (milliseconds from midnight)"
+      },
+      "timeEnd": {
+        "type": "number",
+        "description": "Scheduled end time (milliseconds from midnight)"
+      },
+      "duration": {
+        "type": "number",
+        "description": "Event duration (milliseconds)"
+      },
+      "skip": {
+        "type": "boolean",
+        "description": "Whether event should be skipped"
+      },
+      "colour": {
+        "type": "string",
+        "description": "Event color"
+      },
+      "custom": {
+        "type": "object",
+        "description": "Custom fields for the event",
+        "additionalProperties": true
+      }
+    }
+  },
+  "default": []
+}
