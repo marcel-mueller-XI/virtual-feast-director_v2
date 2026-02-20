@@ -32,8 +32,9 @@ function applyAppearance(settings) {
     const upcomingSize = (settings.textSize?.upcoming ?? 32) + 'px';
     const maxWidth     = (settings.maxTextWidth ?? 1800) + 'px';
     document.querySelectorAll('.event.current .title').forEach(el => {
-        el.style.fontSize = currentSize;
-        el.style.maxWidth = maxWidth;
+        el.style.fontSize   = currentSize;
+        el.style.maxWidth   = maxWidth;
+        el.style.fontWeight = (settings.currentBold ?? true) ? 'bold' : 'normal';
     });
     document.querySelectorAll('.event.upcoming').forEach(el => {
         el.style.fontSize = upcomingSize;

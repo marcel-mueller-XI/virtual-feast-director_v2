@@ -67,6 +67,11 @@
       "minimum": 50,
       "description": "Maximum rendered width (px) of a text line before it is truncated with …"
     },
+    "currentBold": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the current event title is displayed in bold"
+    },
     "countVisibleEvents": {
       "type": "number",
       "default": 4,

@@ -223,6 +223,7 @@ Third Event Title
 - Color pickers (background, text, accents)
 - Font selection dropdowns
 - Text size option (separate for current and upcomming events)
+- Bold toggle for current event
 - Max text width input (px) — text exceeding this rendered width is truncated with `…`
 - Text position sliders
 - left/right alignment

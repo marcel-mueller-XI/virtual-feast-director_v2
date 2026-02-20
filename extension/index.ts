@@ -20,6 +20,7 @@ export = (nodecg: any) => {
       textSize: { current: 48, upcoming: 32 },
       position: { x: 0, y: 0 },
       maxTextWidth: 1800,
+      currentBold: true,
       alignment: 'left',
       countVisibleEvents: 4
     },

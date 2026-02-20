@@ -29,7 +29,6 @@ body {
 
 .event.current .title {
     font-size: 48px;
-    font-weight: bold;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
