@@ -1,6 +1,6 @@
 {
   "name": "virtual-feast-director-v2",
-  "version": "2.0.0",
+  "version": "0.1.0",
   "description": "NodeCG bundle for displaying Ontime event information on projection screens",
   "homepage": "https://github.com/marcel-mueller-XI/virtual-feast-director_v2",
   "author": "Marcel Müller",
@@ -13,8 +13,7 @@
     "nodecg-bundle",
     "ontime",
     "event-management",
-    "graphics",
-    "streaming"
+    "graphics"
   ],
   "nodecg": {
     "compatibleRange": "^2.0.0",
@@ -24,21 +23,24 @@
         "title": "Connection",
         "width": 2,
         "file": "connection.html",
-        "headerColor": "#2c3e50"
+        "headerColor": "#2c3e50",
+        "workspace": "Virtual feast director"
       },
       {
         "name": "appearance",
         "title": "Appearance",
         "width": 3,
         "file": "appearance.html",
-        "headerColor": "#27ae60"
+        "headerColor": "#27ae60",
+        "workspace": "Virtual feast director"
       },
       {
         "name": "data",
         "title": "Data",
         "width": 3,
         "file": "data.html",
-        "headerColor": "#e67e22"
+        "headerColor": "#e67e22",
+        "workspace": "Virtual feast director"
       }
     ],
     "graphics": [
