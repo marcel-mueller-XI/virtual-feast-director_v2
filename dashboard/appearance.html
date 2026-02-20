@@ -150,6 +150,11 @@
         <input type="number" id="size-upcoming" min="8" max="300" value="32">
     </div>
 
+    <div class="form-group">
+        <label for="max-text-width">Max Text Width (px):</label>
+        <input type="number" id="max-text-width" min="50" max="3840" value="1800">
+    </div>
+
     <div class="section-title">Position</div>
 
     <div class="form-group">
@@ -177,6 +182,7 @@
         const fontSelect      = document.getElementById('font');
         const sizeCurrentInput  = document.getElementById('size-current');
         const sizeUpcomingInput = document.getElementById('size-upcoming');
+        const maxTextWidthInput = document.getElementById('max-text-width');
         const posXInput = document.getElementById('position-x');
         const posYInput = document.getElementById('position-y');
         const posXVal   = document.getElementById('position-x-val');
@@ -193,6 +199,7 @@
             fontSelect.value        = settings.font ?? 'Arial, sans-serif';
             sizeCurrentInput.value  = settings.textSize?.current  ?? 48;
             sizeUpcomingInput.value = settings.textSize?.upcoming ?? 32;
+            maxTextWidthInput.value = settings.maxTextWidth ?? 1800;
 
             const x = settings.position?.x ?? 0;
             const y = settings.position?.y ?? 0;
@@ -208,6 +215,7 @@
                     current:  parseInt(sizeCurrentInput.value,  10) || 48,
                     upcoming: parseInt(sizeUpcomingInput.value, 10) || 32
                 },
+                maxTextWidth: parseInt(maxTextWidthInput.value, 10) || 1800,
                 position:  { x: parseInt(posXInput.value, 10), y: parseInt(posYInput.value, 10) },
                 alignment: alignmentSelect.value,
                 countVisibleEvents: parseInt(countVisibleInput.value, 10) || 4
@@ -228,6 +236,7 @@
         fontSelect.addEventListener('change', saveSettings);
         sizeCurrentInput.addEventListener('change', saveSettings);
         sizeUpcomingInput.addEventListener('change', saveSettings);
+        maxTextWidthInput.addEventListener('change', saveSettings);
     </script>
 </body>
 </html>

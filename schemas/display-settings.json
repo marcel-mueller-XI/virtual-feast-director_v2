@@ -61,6 +61,12 @@
       "default": "left",
       "description": "Text alignment"
     },
+    "maxTextWidth": {
+      "type": "number",
+      "default": 1800,
+      "minimum": 50,
+      "description": "Maximum rendered width (px) of a text line before it is truncated with …"
+    },
     "countVisibleEvents": {
       "type": "number",
       "default": 4,

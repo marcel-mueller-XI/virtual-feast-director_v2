@@ -19,6 +19,7 @@ export = (nodecg: any) => {
       font: 'Arial, sans-serif',
       textSize: { current: 48, upcoming: 32 },
       position: { x: 0, y: 0 },
+      maxTextWidth: 1800,
       alignment: 'left',
       countVisibleEvents: 4
     },

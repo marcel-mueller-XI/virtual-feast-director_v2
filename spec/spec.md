@@ -42,6 +42,9 @@ The graphics always render with a transparent background (hardcoded) and display
 - Customizable text color via NodeCG dashboard
 - Option for left or right alignment
 - Configurable fonts
+- Separate font sizes for current and upcoming events
+- **No word wrap** — text is always single-line
+- **Max text width (px)**: if rendered text exceeds this width it is truncated with `…`; measures actual rendered width, not character count
 - Responsive layout
 - Smooth transitions between events
 
@@ -220,6 +223,7 @@ Third Event Title
 - Color pickers (background, text, accents)
 - Font selection dropdowns
 - Text size option (separate for current and upcomming events)
+- Max text width input (px) — text exceeding this rendered width is truncated with `…`
 - Text position sliders
 - left/right alignment
 - choose how many events will be shown `count_visible_events`, including the current event
