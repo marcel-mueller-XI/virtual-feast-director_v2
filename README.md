@@ -4,7 +4,9 @@ NodeCG bundle for displaying Ontime event information on projection screens and 
 
 ## Overview
 
-Virtual Feast Director v2 displays the **current event** and **upcoming events** from [Ontime](https://github.com/cpvalente/ontime) in a clean, customizable interface for live events, conferences, and streaming productions.
+**This software is mostly written by AI.**  
+Virtual Feast Director v2 displays the title of the **current event** and **upcoming events** from [Ontime](https://github.com/cpvalente/ontime) in a clean, customizable interface designed for projection screens and LED walls.
+This is intended for use at live events or conferences.
 
 **Key Features:**
 - Real-time WebSocket connection to Ontime v4+
@@ -19,7 +21,6 @@ Unlike the original Virtual Feast Director:
 - **NodeCG bundle** instead of Ontime custom view
 - **More flexible** - Works independently of Ontime's view system
 - **Enhanced control** - Dashboard panels for configuration
-- **TypeScript** for better maintainability
 
 ## Quick Start
 
