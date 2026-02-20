@@ -138,6 +138,41 @@ export = (nodecg: any) => {
     });
   }
 
+  // Recompute currentEvent based on liveCurrentEventId and current visibility rules.
+  // Must be called whenever visibility settings change, not just on WebSocket updates.
+  function updateCurrentEvent() {
+    if (!liveCurrentEventId) {
+      currentEvent.value = null;
+      return;
+    }
+
+    const allEventsRaw: any[] = allEvents.value as any[];
+    const liveEvent = allEventsRaw.find((e: any) => e.id === liveCurrentEventId) ?? null;
+
+    if (!liveEvent) {
+      currentEvent.value = null;
+      return;
+    }
+
+    const filtered = filterEvents([liveEvent]);
+    if (filtered.length > 0) {
+      // Live event is public — show it on graphics.
+      currentEvent.value = JSON.parse(JSON.stringify(liveEvent));
+    } else {
+      // Live event is private — show the last public event before it.
+      const rawIndex = allEventsRaw.findIndex((e: any) => e.id === liveCurrentEventId);
+      if (rawIndex > 0) {
+        const eventsBefore = allEventsRaw.slice(0, rawIndex);
+        const filteredBefore = filterEvents(eventsBefore);
+        currentEvent.value = filteredBefore.length > 0
+          ? JSON.parse(JSON.stringify(filteredBefore[filteredBefore.length - 1]))
+          : null;
+      } else {
+        currentEvent.value = null;
+      }
+    }
+  }
+
   // Update filtered upcoming events
   function updateUpcomingEvents() {
     const allEventsRaw: any[] = allEvents.value as any[];
@@ -186,6 +221,7 @@ export = (nodecg: any) => {
       eventVisibility.value[event.id] = isPublic;
     });
     
+    updateCurrentEvent();
     updateUpcomingEvents();
   }
 
@@ -310,34 +346,7 @@ export = (nodecg: any) => {
       // show which event is live even when it is private.
       ontimeCurrentEvent.value = event ? JSON.parse(JSON.stringify(event)) : null;
 
-      if (!event) {
-        currentEvent.value = null;
-      } else {
-        const filtered = filterEvents([event]);
-        if (filtered.length > 0) {
-          // Current event is public — show it directly on graphics.
-          // Deep-clone so this object isn't shared with any other replicant.
-          currentEvent.value = JSON.parse(JSON.stringify(event));
-        } else {
-          // Current event is private — show the last public event that
-          // appeared before the current live position in the rundown.
-          const allEventsRaw: any[] = allEvents.value as any[];
-          const rawIndex = allEventsRaw.findIndex((e: any) => e.id === event.id);
-          if (rawIndex > 0) {
-            const eventsBefore = allEventsRaw.slice(0, rawIndex);
-            const filteredBefore = filterEvents(eventsBefore);
-            // Deep-clone: elements of filteredBefore belong to the allEvents
-            // replicant and cannot be directly assigned to another replicant.
-            currentEvent.value = filteredBefore.length > 0
-              ? JSON.parse(JSON.stringify(filteredBefore[filteredBefore.length - 1]))
-              : null;
-          } else {
-            // Private event is first in rundown — nothing to show.
-            currentEvent.value = null;
-          }
-        }
-      }
-
+      updateCurrentEvent();
       updateUpcomingEvents();
     }
   }
@@ -357,9 +366,11 @@ export = (nodecg: any) => {
     updateUpcomingEvents();
   });
 
-  // Listen for event visibility changes
+  // Listen for event visibility changes — must also recompute currentEvent
+  // because toggling an event public/private can change what appears as current.
   eventVisibility.on('change', () => {
     nodecg.log.debug('Event visibility changed, updating events');
+    updateCurrentEvent();
     updateUpcomingEvents();
   });
 
