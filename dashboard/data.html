@@ -79,9 +79,11 @@
         .event-item.public {
             background: #d4edda;
         }
+        /* current-in-ontime always wins over public/private styling */
         .event-item.current {
             border-left: 4px solid #007bff;
-            background: #cfe2ff;
+            background: #cfe2ff !important;
+            opacity: 1 !important;
         }
         .event-item.visible-in-graphics {
             border-right: 4px solid #28a745;
@@ -191,6 +193,7 @@
 
     <script>
         const allEventsRep = nodecg.Replicant('allEvents');
+        const ontimeCurrentEventRep = nodecg.Replicant('ontimeCurrentEvent');
         const currentEventRep = nodecg.Replicant('currentEvent');
         const upcomingEventsRep = nodecg.Replicant('upcomingEvents');
         const eventVisibilityRep = nodecg.Replicant('eventVisibility');
@@ -203,7 +206,8 @@
         const connectionStatusEl = document.getElementById('connection-status');
 
         let allEvents = [];
-        let currentEvent = null;
+        let ontimeCurrentEvent = null;  // real Ontime current event (public or private)
+        let currentEvent = null;        // event currently displayed on graphics
         let upcomingEvents = [];
         let eventVisibility = {};
         let graphicsVisible = true;
@@ -234,7 +238,7 @@
 
         // Check if event is visible in graphics
         function isEventVisibleInGraphics(eventId) {
-            // Current event or in upcoming events
+            // Event shown as current on graphics, or listed as upcoming
             if (currentEvent && currentEvent.id === eventId) {
                 return true;
             }
@@ -253,7 +257,8 @@
 
             eventListEl.innerHTML = events.map(event => {
                 const isPublic = eventVisibility[event.id] === true;
-                const isCurrent = currentEvent && currentEvent.id === event.id;
+                // isCurrent reflects the REAL Ontime current event (may be private)
+                const isCurrent = ontimeCurrentEvent && ontimeCurrentEvent.id === event.id;
                 const isVisible = isEventVisibleInGraphics(event.id);
                 const isSkipped = event.skip === true;
 
@@ -274,7 +279,6 @@
                                 ${event.cue ? `Cue: ${event.cue} | ` : ''}
                                 ${startTime ? `${startTime} - ${endTime}` : ''}
                                 ${isSkipped ? ' | ⏭️ SKIPPED' : ''}
-                                ${isCurrent ? ' | 🔴 CURRENT' : ''}
                             </div>
                         </div>
                         <div class="event-actions">
@@ -304,6 +308,11 @@
         // Listen for replicant changes
         allEventsRep.on('change', (newValue) => {
             allEvents = newValue || [];
+            renderEventList();
+        });
+
+        ontimeCurrentEventRep.on('change', (newValue) => {
+            ontimeCurrentEvent = newValue;
             renderEventList();
         });
 

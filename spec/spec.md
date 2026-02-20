@@ -26,11 +26,23 @@ The graphics always render with a transparent background (hardcoded) and display
 
 #### Current Event
 - Event title (big)
+- When the live Ontime event is **public**, it is shown as the current event.
+- When the live Ontime event is **private**, the **last public event that appeared before** the current live position in the rundown is shown as the current event. If no public event precedes it, nothing is shown in the current-event slot.
 
 #### Upcoming Events
 - Event title (smaller)
+- Always the next N public events **after** the current live Ontime position in the rundown (regardless of whether that live event is public or private).
 
 **Note**: The setting `count_visible_events` determines the total number of events displayed, including the current event. For example, if `count_visible_events = 4`, the display shows 1 current event + 3 upcoming events.
+
+**Example — private current event:**
+```
+Event 1: public
+Event 2: private  ← Ontime current
+Event 3: public
+Event 4: public
+```
+Graphics shows: Event 1 as current, Event 3 and Event 4 as upcoming.
 
 ### 2.2 Data Filtering
 - Only display **public events** (filterable by custom fields),
@@ -84,9 +96,9 @@ virtual-feast-director_v2/
 #### Replicants (State Management)
 - `ontimeConfig`: Ontime server connection details (IP, port)
 - `ontimeConnected`: Connection status
-- `runtimeData`: Current Ontime runtime data
-- `currentEvent`: Currently playing/loaded event
-- `upcomingEvents`: Next X public events
+- `ontimeCurrentEvent`: The raw current event as reported by Ontime — always set regardless of public/private status. Used by the data panel to show which event is live in Ontime.
+- `currentEvent`: The event shown as "current" on graphics. Equal to the live Ontime event when public; equals the last public event before the live position when the live event is private; `null` if no qualifying event exists.
+- `upcomingEvents`: Next X public events after the current live Ontime position
 - `displaySettings`: Customization options (colors, fonts, layout)
 
 #### Dashboard Panels
@@ -141,6 +153,14 @@ The extension should filter events based on:
 1. **Skip status**: Exclude events with `skip: true`
 2. **Custom field filtering**: Check the `custom.public` field — if the field contains **any non-empty text** the event is considered public; if the field is absent, `null`, or an empty string the event is considered private. (Ontime stores custom field values as text, so users simply type any value such as `"true"` or `"yes"` to mark an event public and leave it blank to make it private.)
 3. **Event type**: Only include type "event" (exclude blocks, delays, etc.)
+
+### 4.4 Current Event Display when Ontime Live Event is Private
+When Ontime's `eventNow` is a private (non-public) event:
+- **`currentEvent` replicant**: set to the last public event that precedes the live event in rundown order. If no public event precedes it, `currentEvent` is `null`.
+- **`upcomingEvents` replicant**: calculated from the events **after** the live Ontime position (same as when live event is public).
+- **`ontimeCurrentEvent` replicant**: always set to the raw `eventNow` value from Ontime, regardless of public/private status.
+
+This ensures the graphics always display meaningful content (the last known public state) while the data panel always reflects the true runtime position in Ontime.
 
 ### 4.4 Polling & Updates
 - Initial connection: Send `{tag: "poll"}` to get full state
@@ -232,7 +252,8 @@ Third Event Title
 #### Data Panel
 - Show all events, not only those to be shown
 - Toggle public/private of events — writes the change back to Ontime via `GET /api/change/<eventId>?custom:public=<value>` (non-empty string for public, empty string for private)
-- Visual indication which events are shown
+- Visual indication which events are shown in graphics (thick green right border)
+- Visual indication which event is current event in ontime (thick blue left border)
 - Toggle for hide/show graphics (controls visibility of the entire graphics output)
 - Event list updates automatically whenever Ontime signals a rundown change via WebSocket (no manual refresh button)
 - Live preview

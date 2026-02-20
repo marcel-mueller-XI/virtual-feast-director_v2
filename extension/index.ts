@@ -49,6 +49,13 @@ export = (nodecg: any) => {
     defaultValue: []
   });
 
+  // The real current event as reported by Ontime — regardless of public/private.
+  // Exposed so the data panel can always show which event is live in Ontime.
+  const ontimeCurrentEvent = nodecg.Replicant('ontimeCurrentEvent', {
+    defaultValue: null,
+    persistent: false
+  });
+
   const eventVisibility = nodecg.Replicant('eventVisibility', {
     defaultValue: {},
     persistent: true
@@ -299,13 +306,36 @@ export = (nodecg: any) => {
       const event = data.eventNow;
       liveCurrentEventId = event?.id ?? null;
 
-      // Only expose the current event to graphics if it passes the public filter.
-      // Private events must not appear on screen.
+      // Always expose the real Ontime current event so the data panel can
+      // show which event is live even when it is private.
+      ontimeCurrentEvent.value = event ? JSON.parse(JSON.stringify(event)) : null;
+
       if (!event) {
         currentEvent.value = null;
       } else {
         const filtered = filterEvents([event]);
-        currentEvent.value = filtered.length > 0 ? event : null;
+        if (filtered.length > 0) {
+          // Current event is public — show it directly on graphics.
+          // Deep-clone so this object isn't shared with any other replicant.
+          currentEvent.value = JSON.parse(JSON.stringify(event));
+        } else {
+          // Current event is private — show the last public event that
+          // appeared before the current live position in the rundown.
+          const allEventsRaw: any[] = allEvents.value as any[];
+          const rawIndex = allEventsRaw.findIndex((e: any) => e.id === event.id);
+          if (rawIndex > 0) {
+            const eventsBefore = allEventsRaw.slice(0, rawIndex);
+            const filteredBefore = filterEvents(eventsBefore);
+            // Deep-clone: elements of filteredBefore belong to the allEvents
+            // replicant and cannot be directly assigned to another replicant.
+            currentEvent.value = filteredBefore.length > 0
+              ? JSON.parse(JSON.stringify(filteredBefore[filteredBefore.length - 1]))
+              : null;
+          } else {
+            // Private event is first in rundown — nothing to show.
+            currentEvent.value = null;
+          }
+        }
       }
 
       updateUpcomingEvents();
