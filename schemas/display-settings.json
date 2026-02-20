@@ -22,17 +22,17 @@
       "properties": {
         "current": {
           "type": "number",
-          "default": 48,
-          "minimum": 8,
-          "maximum": 300,
-          "description": "Font size (px) for the current event title"
+          "default": 2.5,
+          "minimum": 0.1,
+          "maximum": 15,
+          "description": "Font size (vw) for the current event title"
         },
         "upcoming": {
           "type": "number",
-          "default": 32,
-          "minimum": 8,
-          "maximum": 300,
-          "description": "Font size (px) for upcoming event titles"
+          "default": 1.7,
+          "minimum": 0.1,
+          "maximum": 15,
+          "description": "Font size (vw) for upcoming event titles"
         }
       }
     },
@@ -63,9 +63,10 @@
     },
     "maxTextWidth": {
       "type": "number",
-      "default": 1800,
-      "minimum": 50,
-      "description": "Maximum rendered width (px) of a text line before it is truncated with …"
+      "default": 90,
+      "minimum": 5,
+      "maximum": 100,
+      "description": "Maximum rendered width (vw) of a text line before it is truncated with …"
     },
     "currentBold": {
       "type": "boolean",

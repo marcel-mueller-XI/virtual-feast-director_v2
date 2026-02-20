@@ -7,29 +7,30 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            padding: 10px;
+            padding: 0.625rem;
+            font-size: 16px;
         }
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 0.9375rem;
         }
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 0.3125rem;
             font-weight: bold;
         }
         input, select {
             width: 100%;
-            padding: 5px;
+            padding: 0.3125rem;
             box-sizing: border-box;
         }
         input[type="color"] {
-            height: 40px;
-            padding: 2px;
+            height: 2.5rem;
+            padding: 0.125rem;
             cursor: pointer;
         }
         input[type="checkbox"] {
             width: auto;
-            margin-right: 5px;
+            margin-right: 0.3125rem;
             cursor: pointer;
         }
         input[type="number"] {
@@ -38,29 +39,29 @@
         .slider-row {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 0.5rem;
         }
         .slider-row input[type="range"] {
             flex: 1;
             padding: 0;
         }
         .slider-value {
-            min-width: 36px;
+            min-width: 2.25rem;
             text-align: right;
-            font-size: 13px;
+            font-size: 0.8125rem;
             color: #555;
         }
         .slider-number {
-            width: 60px !important;
-            padding: 3px 5px;
-            font-size: 13px;
+            width: 3.75rem !important;
+            padding: 0.1875rem 0.3125rem;
+            font-size: 0.8125rem;
             text-align: right;
             flex-shrink: 0;
         }
         .color-row {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 0.625rem;
         }
         .color-row input[type="color"] {
             flex: 1;
@@ -77,13 +78,13 @@
             cursor: not-allowed;
         }
         .section-title {
-            font-size: 11px;
+            font-size: 0.6875rem;
             text-transform: uppercase;
             color: #888;
             letter-spacing: 0.05em;
-            margin: 20px 0 8px;
+            margin: 1.25rem 0 0.5rem;
             border-bottom: 1px solid #ddd;
-            padding-bottom: 4px;
+            padding-bottom: 0.25rem;
         }
     </style>
 </head>
@@ -148,8 +149,8 @@
     <div class="section-title">Text Sizes</div>
 
     <div class="form-group">
-        <label for="size-current">Current Event (px):</label>
-        <input type="number" id="size-current" min="8" max="300" value="48">
+        <label for="size-current">Current Event (vw):</label>
+        <input type="number" id="size-current" min="0.1" max="15" step="0.1" value="2.5">
     </div>
 
     <div class="form-group">
@@ -160,13 +161,13 @@
     </div>
 
     <div class="form-group">
-        <label for="size-upcoming">Upcoming Events (px):</label>
-        <input type="number" id="size-upcoming" min="8" max="300" value="32">
+        <label for="size-upcoming">Upcoming Events (vw):</label>
+        <input type="number" id="size-upcoming" min="0.1" max="15" step="0.1" value="1.7">
     </div>
 
     <div class="form-group">
-        <label for="max-text-width">Max Text Width (px):</label>
-        <input type="number" id="max-text-width" min="50" max="3840" value="1800">
+        <label for="max-text-width">Max Text Width (vw):</label>
+        <input type="number" id="max-text-width" min="5" max="100" step="0.5" value="90">
     </div>
 
     <div class="section-title">Position</div>
@@ -218,10 +219,10 @@
             alignmentSelect.value   = settings.alignment ?? 'left';
             countVisibleInput.value = settings.countVisibleEvents ?? 4;
             fontSelect.value        = settings.font ?? 'Arial, sans-serif';
-            sizeCurrentInput.value  = settings.textSize?.current  ?? 48;
+            sizeCurrentInput.value  = settings.textSize?.current  ?? 2.5;
             currentBoldInput.checked = settings.currentBold ?? true;
-            sizeUpcomingInput.value = settings.textSize?.upcoming ?? 32;
-            maxTextWidthInput.value = settings.maxTextWidth ?? 1800;
+            sizeUpcomingInput.value = settings.textSize?.upcoming ?? 1.7;
+            maxTextWidthInput.value = settings.maxTextWidth ?? 90;
 
             const x = settings.position?.x ?? 0;
             const y = settings.position?.y ?? 0;
@@ -235,10 +236,10 @@
                 colors:    { text: textColorInput.value },
                 font:      fontSelect.value || 'Arial, sans-serif',
                 textSize:  {
-                    current:  parseInt(sizeCurrentInput.value,  10) || 48,
-                    upcoming: parseInt(sizeUpcomingInput.value, 10) || 32
+                    current:  parseFloat(sizeCurrentInput.value)  || 2.5,
+                    upcoming: parseFloat(sizeUpcomingInput.value) || 1.7
                 },
-                maxTextWidth: parseInt(maxTextWidthInput.value, 10) || 1800,
+                maxTextWidth: parseFloat(maxTextWidthInput.value) || 90,
                 currentBold: currentBoldInput.checked,
                 position:  { x: parseDecimal(posXNum.value), y: parseDecimal(posYNum.value) },
                 alignment: alignmentSelect.value,

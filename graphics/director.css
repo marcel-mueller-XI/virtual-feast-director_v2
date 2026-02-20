@@ -28,7 +28,7 @@ body {
 }
 
 .event.current .title {
-    font-size: 48px;
+    font-size: 2.5vw;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -36,7 +36,7 @@ body {
 }
 
 .event.upcoming {
-    font-size: 32px;
+    font-size: 1.7vw;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

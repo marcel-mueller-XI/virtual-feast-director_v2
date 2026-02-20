@@ -28,9 +28,9 @@ function applyAppearance(settings) {
     });
 
     // Text sizes + max width (controls ellipsis truncation)
-    const currentSize  = (settings.textSize?.current  ?? 48) + 'px';
-    const upcomingSize = (settings.textSize?.upcoming ?? 32) + 'px';
-    const maxWidth     = (settings.maxTextWidth ?? 1800) + 'px';
+    const currentSize  = (settings.textSize?.current  ?? 2.5) + 'vw';
+    const upcomingSize = (settings.textSize?.upcoming ?? 1.7) + 'vw';
+    const maxWidth     = (settings.maxTextWidth ?? 90) + 'vw';
     document.querySelectorAll('.event.current .title').forEach(el => {
         el.style.fontSize   = currentSize;
         el.style.maxWidth   = maxWidth;
@@ -79,8 +79,8 @@ function renderUpcomingEvents(events) {
         div.textContent = event.title ?? '';
         // Apply font and size immediately from current settings
         div.style.fontFamily = displaySettings.value?.font ?? 'Arial, sans-serif';
-        div.style.fontSize   = (displaySettings.value?.textSize?.upcoming ?? 32) + 'px';
-        div.style.maxWidth   = (displaySettings.value?.maxTextWidth ?? 1800) + 'px';
+        div.style.fontSize   = (displaySettings.value?.textSize?.upcoming ?? 1.7) + 'vw';
+        div.style.maxWidth   = (displaySettings.value?.maxTextWidth ?? 90) + 'vw';
         container.appendChild(div);
     });
 }
