@@ -66,11 +66,13 @@
             border-radius: 4px;
         }
         .event-item {
+            position: relative;
             padding: 12px;
             margin: 0;
             border-bottom: 1px solid #dee2e6;
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 10px;
             align-items: center;
             transition: background 0.2s;
         }
@@ -81,20 +83,31 @@
             background: #f8f9fa;
         }
         .event-item.private {
-            background: #f8f9fa;
-            opacity: 0.7;
+            background: #d0d4da;
         }
         .event-item.public {
             background: #d4edda;
         }
-        /* current-in-ontime always wins over public/private styling */
-        .event-item.current {
-            border-left: 4px solid #007bff;
-            background: #cfe2ff !important;
-            opacity: 1 !important;
-        }
         .event-item.visible-in-graphics {
-            border-right: 4px solid #28a745;
+            box-shadow: inset 4px 0 0 #c92a2a, inset -4px 0 0 #c92a2a;
+        }
+        .event-item.visible-group-start {
+            box-shadow: inset 4px 0 0 #c92a2a, inset -4px 0 0 #c92a2a, inset 0 4px 0 #c92a2a;
+        }
+        .event-item.visible-group-end {
+            box-shadow: inset 4px 0 0 #c92a2a, inset -4px 0 0 #c92a2a, inset 0 -4px 0 #c92a2a;
+        }
+        .event-item.visible-group-single {
+            box-shadow: inset 0 0 0 4px #c92a2a;
+        }
+        .event-item.skipped {
+            background: repeating-linear-gradient(
+                -45deg,
+                rgba(255, 227, 227, 0.55),
+                rgba(255, 227, 227, 0.55) 8px,
+                rgba(255, 241, 241, 0.55) 8px,
+                rgba(255, 241, 241, 0.55) 16px
+            );
         }
         .event-info {
             flex: 1;
@@ -111,6 +124,11 @@
         .event-meta {
             font-size: 12px;
             color: #6c757d;
+        }
+        .event-item.skipped .event-title {
+            text-decoration: line-through;
+            text-decoration-thickness: 2px;
+            text-decoration-color: #000000;
         }
         .event-actions {
             display: flex;
@@ -139,31 +157,6 @@
             text-align: center;
             color: #6c757d;
         }
-        .legend {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-            font-size: 12px;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .legend-box {
-            width: 16px;
-            height: 16px;
-            border-radius: 2px;
-        }
-        .legend-current {
-            border-left: 4px solid #007bff;
-            width: 12px;
-        }
-        .legend-visible {
-            border-right: 4px solid #28a745;
-            width: 12px;
-        }
     </style>
 </head>
 <body>
@@ -175,25 +168,6 @@
         <span class="status-badge status-not-started" id="project-status">Project Not Started</span>
     </div>
 
-    <div class="legend">
-        <div class="legend-item">
-            <div class="legend-box legend-current"></div>
-            <span>Current Event</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-box legend-visible"></div>
-            <span>Visible in Graphics</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-box" style="background: #d4edda;"></div>
-            <span>Public</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-box" style="background: #f8f9fa;"></div>
-            <span>Private</span>
-        </div>
-    </div>
-    
     <div class="event-list" id="event-list">
         <div class="empty-state">
             <p><em>No events loaded. Connect to Ontime first.</em></p>
@@ -277,37 +251,47 @@
             // Filter only events (not blocks, delays, etc.)
             const events = allEvents.filter(e => e.type === 'event');
 
-            eventListEl.innerHTML = events.map(event => {
+            eventListEl.innerHTML = events.map((event, index) => {
                 const isPublic = eventVisibility[event.id] === true;
                 // isCurrent reflects the REAL Ontime current event (may be private)
                 const isCurrent = ontimeCurrentEvent && ontimeCurrentEvent.id === event.id;
                 const isVisible = isEventVisibleInGraphics(event.id);
                 const isSkipped = event.skip === true;
 
+                const prevVisible = index > 0 && isEventVisibleInGraphics(events[index - 1].id);
+                const nextVisible = index < events.length - 1 && isEventVisibleInGraphics(events[index + 1].id);
+
                 let classes = ['event-item'];
                 if (isPublic) classes.push('public');
                 else classes.push('private');
                 if (isCurrent) classes.push('current');
-                if (isVisible) classes.push('visible-in-graphics');
+                if (isVisible) {
+                    classes.push('visible-in-graphics');
+                    if (!prevVisible && !nextVisible) classes.push('visible-group-single');
+                    else if (!prevVisible) classes.push('visible-group-start');
+                    else if (!nextVisible) classes.push('visible-group-end');
+                }
+                if (isSkipped) classes.push('skipped');
 
                 const startTime = formatTime(event.timeStart);
                 const endTime = formatTime(event.timeEnd);
+                const metaParts = [];
+                if (event.cue) metaParts.push(`Cue ${event.cue}`);
+                if (startTime) metaParts.push(`${startTime}-${endTime}`);
 
                 return `
                     <div class="${classes.join(' ')}" data-event-id="${event.id}">
                         <div class="event-info">
                             <div class="event-title">${event.title || 'Untitled Event'}</div>
                             <div class="event-meta">
-                                ${event.cue ? `Cue: ${event.cue} | ` : ''}
-                                ${startTime ? `${startTime} - ${endTime}` : ''}
-                                ${isSkipped ? ' | ⏭️ SKIPPED' : ''}
+                                ${metaParts.join(' | ')}
                             </div>
                         </div>
                         <div class="event-actions">
                             <button class="toggle-button ${isPublic ? 'public' : ''}" 
                                     data-event-id="${event.id}"
                                     title="Toggle public/private">
-                                ${isPublic ? '👁️ Public' : '🚫 Private'}
+                                ${isPublic ? 'Public' : 'Private'}
                             </button>
                         </div>
                     </div>
