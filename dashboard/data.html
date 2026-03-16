@@ -51,6 +51,14 @@
             background: #f8d7da;
             color: #721c24;
         }
+        .status-started {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-not-started {
+            background: #fff3cd;
+            color: #856404;
+        }
         .event-list {
             max-height: 500px;
             overflow-y: auto;
@@ -164,6 +172,7 @@
             <span id="graphics-status">Show Graphics</span>
         </button>
         <span class="status-badge status-disconnected" id="connection-status">Disconnected</span>
+        <span class="status-badge status-not-started" id="project-status">Project Not Started</span>
     </div>
 
     <div class="legend">
@@ -199,11 +208,13 @@
         const eventVisibilityRep = nodecg.Replicant('eventVisibility');
         const graphicsVisibleRep = nodecg.Replicant('graphicsVisible');
         const ontimeConnectedRep = nodecg.Replicant('ontimeConnected');
+        const ontimeProjectStartedRep = nodecg.Replicant('ontimeProjectStarted');
 
         const eventListEl = document.getElementById('event-list');
         const toggleGraphicsBtn = document.getElementById('toggle-graphics');
         const graphicsStatusEl = document.getElementById('graphics-status');
         const connectionStatusEl = document.getElementById('connection-status');
+        const projectStatusEl = document.getElementById('project-status');
 
         let allEvents = [];
         let ontimeCurrentEvent = null;  // real Ontime current event (public or private)
@@ -211,6 +222,7 @@
         let upcomingEvents = [];
         let eventVisibility = {};
         let graphicsVisible = true;
+        let ontimeProjectStarted = false;
 
         // Update graphics toggle button
         function updateGraphicsButton() {
@@ -220,6 +232,16 @@
             } else {
                 toggleGraphicsBtn.classList.remove('active');
                 graphicsStatusEl.textContent = '🚫 Graphics Hidden';
+            }
+        }
+
+        function updateProjectStatusBadge() {
+            if (ontimeProjectStarted) {
+                projectStatusEl.textContent = 'Project Started';
+                projectStatusEl.className = 'status-badge status-started';
+            } else {
+                projectStatusEl.textContent = 'Project Not Started';
+                projectStatusEl.className = 'status-badge status-not-started';
             }
         }
 
@@ -344,6 +366,11 @@
                 connectionStatusEl.textContent = 'Disconnected';
                 connectionStatusEl.className = 'status-badge status-disconnected';
             }
+        });
+
+        ontimeProjectStartedRep.on('change', (newValue) => {
+            ontimeProjectStarted = newValue === true;
+            updateProjectStatusBadge();
         });
     </script>
 </body>

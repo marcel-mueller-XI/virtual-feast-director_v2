@@ -26,6 +26,7 @@ The graphics always render with a transparent background (hardcoded) and display
 
 #### Current Event
 - Event title (big)
+- If the Ontime project is not started, nothing is displayed in graphics (both current and upcoming areas stay empty).
 - When the live Ontime event is **public**, it is shown as the current event.
 - When the live Ontime event is **private**, the **last public event that appeared before** the current live position in the rundown is shown as the current event. If no public event precedes it, nothing is shown in the current-event slot.
 
@@ -103,6 +104,7 @@ virtual-feast-director_v2/
 - `ontimeConnected`: Boolean connection status. Not persistent.
 - `connectionError`: Latest connection error string or `null`. Not persistent.
 - `ontimeCurrentEvent`: The raw current event as reported by Ontime — always set regardless of public/private status. Used by the data panel to show which event is live in Ontime. Not persistent.
+- `ontimeProjectStarted`: Boolean status derived from Ontime runtime state. If `false`, `currentEvent` is `null` and `upcomingEvents` is `[]` so graphics remain blank. Not persistent.
 - `currentEvent`: The event shown as "current" on graphics. Equal to the live Ontime event when public; equals the last public event before the live position when the live event is private; `null` if no qualifying event exists.
 - `upcomingEvents`: Next X public events after the current live Ontime position.
 - `allEvents`: Full flat rundown as fetched from Ontime HTTP API (all types, not filtered). Used by the data panel to display all events.
@@ -114,6 +116,7 @@ virtual-feast-director_v2/
 - **Connection Panel** (`connection.html`): Configure Ontime server connection
 - **Appearance Panel** (`appearance.html`): Customize appearance, define how many events are shown `count_visible_events`
 - **Data Panel** (`data.html`): List of all events (not only public events), option to set events public/private, hide/show graphics
+- **Data Panel** (`data.html`): List of all events (not only public events), option to set events public/private, hide/show graphics, and show project started/not started status
 
 #### Graphics
 - **Director View**: Main display for screens/projectors
@@ -272,6 +275,7 @@ Third Event Title
 - Public events have green background (`#d4edda`); private events have grey background (`#f8f9fa`, reduced opacity)
 - "Show/Hide Graphics" button — toggles `graphicsVisible` replicant via `toggleGraphicsVisible` message
 - Connection status badge in the controls bar
+- Project status badge in the controls bar (`Project Started` / `Project Not Started`)
 - Legend explaining all visual indicators
 - Event list updates automatically whenever Ontime signals a `refetch { target: "rundown" }` WebSocket message (no manual refresh button)
 

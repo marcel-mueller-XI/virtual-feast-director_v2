@@ -37,6 +37,11 @@ export = (nodecg: any) => {
     persistent: false
   });
 
+  const ontimeProjectStarted = nodecg.Replicant('ontimeProjectStarted', {
+    defaultValue: false,
+    persistent: false
+  });
+
   const currentEvent = nodecg.Replicant('currentEvent', {
     defaultValue: null
   });
@@ -141,6 +146,11 @@ export = (nodecg: any) => {
   // Recompute currentEvent based on liveCurrentEventId and current visibility rules.
   // Must be called whenever visibility settings change, not just on WebSocket updates.
   function updateCurrentEvent() {
+    if (ontimeProjectStarted.value === false) {
+      currentEvent.value = null;
+      return;
+    }
+
     if (!liveCurrentEventId) {
       currentEvent.value = null;
       return;
@@ -175,6 +185,11 @@ export = (nodecg: any) => {
 
   // Update filtered upcoming events
   function updateUpcomingEvents() {
+    if (ontimeProjectStarted.value === false) {
+      upcomingEvents.value = [];
+      return;
+    }
+
     const allEventsRaw: any[] = allEvents.value as any[];
     const count = (displaySettings.value.countVisibleEvents || 4) - 1;
 
@@ -336,7 +351,67 @@ export = (nodecg: any) => {
     }
   }
 
+  function parseProjectStarted(runtimeData: any): boolean | null {
+    if (!runtimeData || typeof runtimeData !== 'object') {
+      return null;
+    }
+
+    if (typeof runtimeData.started === 'boolean') {
+      return runtimeData.started;
+    }
+
+    const playback = runtimeData.playback;
+    if (typeof playback === 'boolean') {
+      return playback;
+    }
+    if (typeof playback === 'string') {
+      const normalized = playback.toLowerCase();
+      return !['stop', 'stopped', 'idle', 'paused', 'pause', 'none'].includes(normalized);
+    }
+    if (playback && typeof playback === 'object') {
+      if (typeof playback.started === 'boolean') return playback.started;
+      if (typeof playback.isRunning === 'boolean') return playback.isRunning;
+      if (typeof playback.isPlaying === 'boolean') return playback.isPlaying;
+      if (typeof playback.playing === 'boolean') return playback.playing;
+      if (typeof playback.state === 'string') {
+        const normalized = playback.state.toLowerCase();
+        return !['stop', 'stopped', 'idle', 'paused', 'pause', 'none'].includes(normalized);
+      }
+    }
+
+    const timer = runtimeData.timer;
+    if (timer && typeof timer === 'object') {
+      if (typeof timer.isRunning === 'boolean') return timer.isRunning;
+      if (typeof timer.running === 'boolean') return timer.running;
+      if (typeof timer.started === 'boolean') return timer.started;
+      if (typeof timer.startedAt === 'number') return timer.startedAt > 0;
+      if (typeof timer.state === 'string') {
+        const normalized = timer.state.toLowerCase();
+        return !['stop', 'stopped', 'idle', 'paused', 'pause', 'none'].includes(normalized);
+      }
+    }
+
+    if ('eventNow' in runtimeData) {
+      return Boolean(runtimeData.eventNow);
+    }
+
+    return null;
+  }
+
   function updateFromRuntimeData(data: any) {
+    const started = parseProjectStarted(data);
+    if (started !== null) {
+      ontimeProjectStarted.value = started;
+    }
+
+    if (ontimeProjectStarted.value === false) {
+      liveCurrentEventId = null;
+      ontimeCurrentEvent.value = null;
+      updateCurrentEvent();
+      updateUpcomingEvents();
+      return;
+    }
+
     // payload is Partial<RuntimeStore>, so only update fields that are present
     if ('eventNow' in data) {
       const event = data.eventNow;
