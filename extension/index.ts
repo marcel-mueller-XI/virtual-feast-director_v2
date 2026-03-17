@@ -377,10 +377,8 @@ export = (nodecg: any) => {
 
       case 'refetch':
         // Ontime signals that persistent data (rundown, custom fields, etc.) has changed
-        nodecg.log.debug(`Received refetch signal for: ${message.payload?.target}`);
-        if (message.payload?.target === 'rundown') {
-          refreshEventData();
-        }
+        nodecg.log.debug(`Received refetch signal for: ${message.payload?.target ?? 'all'}`);
+        refreshEventData();
         break;
 
       default:
