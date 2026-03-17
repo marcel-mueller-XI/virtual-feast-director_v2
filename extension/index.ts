@@ -75,11 +75,42 @@ export = (nodecg: any) => {
   let reconnectTimer: NodeJS.Timeout | null = null;
   let reconnectAttempts = 0;
   const MAX_RECONNECT_ATTEMPTS = 10;
+  let intentionalClose = false;
 
   // Raw current event ID from Ontime (regardless of public/private status).
   // Used to correctly calculate which events are "upcoming" even when the
   // current event itself is private and therefore not exposed to graphics.
   let liveCurrentEventId: string | null = null;
+
+  // Ensure the 'public' custom field exists in Ontime; create it if not.
+  async function ensureCustomFieldPublic(ip: string, port: number): Promise<void> {
+    const baseUrl = `http://${ip}:${port}`;
+    try {
+      const getRes = await fetch(`${baseUrl}/data/custom-fields`);
+      if (!getRes.ok) {
+        nodecg.log.warn(`Could not fetch custom fields: HTTP ${getRes.status}`);
+        return;
+      }
+      const fields: Record<string, any> = await getRes.json();
+      if (Object.values(fields).some((f: any) => f.label === 'public')) {
+        nodecg.log.info('Custom field "public" already exists in Ontime — skipping creation');
+        return;
+      }
+      const postRes = await fetch(`${baseUrl}/data/custom-fields`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ label: 'public', colour: '#4fd4c2', type: 'text' })
+      });
+      if (postRes.ok) {
+        nodecg.log.info('Created custom field "public" in Ontime');
+      } else {
+        const body = await postRes.text();
+        nodecg.log.warn(`Failed to create custom field "public": HTTP ${postRes.status} — ${body}`);
+      }
+    } catch (err) {
+      nodecg.log.error('Error ensuring custom field "public":', err);
+    }
+  }
 
   // Fetch rundown data from Ontime HTTP API
   async function fetchRundownData(ip: string, port: number): Promise<any[]> {
@@ -244,6 +275,7 @@ export = (nodecg: any) => {
   function connectToOntime(ip: string, port: number) {
     if (ws) {
       nodecg.log.info('Closing existing WebSocket connection...');
+      intentionalClose = true;
       ws.close();
       ws = null;
     }
@@ -273,7 +305,8 @@ export = (nodecg: any) => {
           nodecg.log.info('Sent poll request to Ontime');
         }
         
-        // Fetch complete rundown data
+        // Ensure the 'public' custom field exists, then fetch rundown data
+        ensureCustomFieldPublic(ip, port);
         refreshEventData();
       });
 
@@ -297,6 +330,11 @@ export = (nodecg: any) => {
         nodecg.log.warn(`WebSocket closed. Code: ${code}, Reason: ${reason.toString()}`);
         ontimeConnected.value = false;
         ws = null;
+
+        if (intentionalClose) {
+          intentionalClose = false;
+          return;
+        }
 
         // Attempt reconnect
         if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
@@ -487,10 +525,6 @@ export = (nodecg: any) => {
     nodecg.log.info(`Graphics visibility toggled to ${graphicsVisible.value}`);
   });
 
-  // Initial connection
-  if (ontimeConfig.value && ontimeConfig.value.ip && ontimeConfig.value.port) {
-    connectToOntime(ontimeConfig.value.ip, ontimeConfig.value.port);
-  }
 
   // Cleanup on shutdown
   nodecg.on('exit', () => {
